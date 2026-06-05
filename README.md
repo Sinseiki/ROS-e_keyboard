@@ -140,10 +140,13 @@ The thumb is normally not required.
 However, ROS-e allows occasional thumb participation when:
 
 * a chord would otherwise cause finger collisions,
-* a longer finger would need to bend excessively,
+* a shorter finger would need to be stretched while a longer finger bends at the same time,
+* a chord would require an unusually wide hand stretch,
 * or an alternative movement is significantly more comfortable.
 
 Thumb usage is therefore optional and situational rather than mandatory.
+
+In practice, the thumb may be used to reduce strain when simultaneous input would otherwise force the hand into an awkward or excessively stretched position.
 
 ## Practical Ergonomics
 
