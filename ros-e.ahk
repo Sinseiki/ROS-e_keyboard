@@ -234,7 +234,7 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
 
     if (k = "h") {
         kind := "vowel"
-        return "o"
+        return "u"
     }
 
     if (k = "j") {
@@ -244,7 +244,7 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
 
     if (k = "b") {
         kind := "vowel"
-        return "u"
+        return "o"
     }
 
     ; ----- left field: onset-side consonants -----
@@ -254,13 +254,13 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
     if (k = "q")
         return onsetShift ? "j" : "w"
 
-    ; W key: z / d
+    ; W key: z / p
     if (k = "w")
-        return onsetShift ? "z" : "d"
+        return onsetShift ? "z" : "p"
 
-    ; E key: y / l
+    ; E key: y / r
     if (k = "e")
-        return onsetShift ? "y" : "l"
+        return onsetShift ? "y" : "r"
 
     ; R key: f / n
     if (k = "r")
@@ -282,13 +282,13 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
     if (k = "z")
         return onsetShift ? "q" : "c"
 
-    ; X key: x / p
+    ; X key: x / d
     if (k = "x")
-        return onsetShift ? "x" : "p"
+        return onsetShift ? "x" : "d"
 
-    ; C key: k / r
+    ; C key: k / l
     if (k = "c")
-        return onsetShift ? "k" : "r"
+        return onsetShift ? "k" : "l"
 
     ; ----- right field: coda-side consonants -----
     ; Upper value = coda shift, lower value = ordinary output.
