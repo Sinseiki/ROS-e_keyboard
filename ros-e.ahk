@@ -42,8 +42,8 @@ global g_sessionId := 0
 ; -------------------------
 ; ROS-e special keys
 ; -------------------------
-global ONSET_SHIFT_KEY := "v"
-global CODA_SHIFT_KEY := "n"
+global ONSET_SHIFT_KEY := "a"
+global CODA_SHIFT_KEY := ";"
 
 ; -------------------------
 ; Toggle
@@ -178,16 +178,15 @@ GetOrderedKeys(ByRef keyMap) {
 
 IsOnsetFieldKey(k) {
     ; Keys that can be affected by onset shift.
-    return (k = "q" || k = "a" || k = "z"
-        || k = "w" || k = "s" || k = "x"
-        || k = "e" || k = "d" || k = "c"
-        || k = "r")
+    return (k = "q" || k = "w" || k = "e" || k = "r"
+        || k = "s" || k = "d"
+        || k = "z" || k = "x" || k = "c" || k = "v")
 }
 
 IsCodaFieldKey(k) {
     ; Keys that can be affected by coda shift.
-    return (k = "u" || k = "i" || k = "o" || k = "p"
-        || k = "k" || k = "l" || k = ";"
+    return (k = "y" || k = "u" || k = "i" || k = "o" || k = "p"
+        || k = "k" || k = "l" 
         || k = "m" || k = "/")
 }
 
@@ -195,17 +194,17 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
     kind := "cons"
 
     ; ----- onset shift key -----
-    ; V is onset-shift when chorded with an onset-side key,
-    ; but outputs "m" when it is not functioning as onset shift.
-    if (k = "v") {
+    ; A is onset-shift when chorded with an onset-side key,
+    ; but outputs "d" when it is not functioning as onset shift.
+    if (k = "a") {
         kind := "cons"
-        return "m"
+        return "d"
     }
 
     ; ----- coda shift key -----
-    ; N is coda-shift when chorded with a coda-side key,
+    ; Semicolon is coda-shift when chorded with a coda-side key,
     ; but outputs "m" when it is not functioning as coda shift.
-    if (k = "n") {
+    if (k = ";") {
         kind := "cons"
         return "m"
     }
@@ -215,11 +214,6 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
     if (k = "t") {
         kind := "vowel"
         return "o"
-    }
-
-    if (k = "y") {
-        kind := "vowel"
-        return "e"
     }
 
     if (k = "f") {
@@ -247,88 +241,94 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
         return "o"
     }
 
+    if (k = "n") {
+        kind := "vowel"
+        return "e"
+    }
+
     ; ----- left field: onset-side consonants -----
     ; Upper value = onset shift, lower value = ordinary output.
 
-    ; Q key: j / w
+    ; Q key: q / w
     if (k = "q")
-        return onsetShift ? "j" : "w"
+        return onsetShift ? "q" : "w"
 
-    ; W key: z / p
+    ; W key: j / c
     if (k = "w")
-        return onsetShift ? "z" : "p"
+        return onsetShift ? "j" : "c"
 
-    ; E key: y / r
+    ; E key: g / t
     if (k = "e")
-        return onsetShift ? "y" : "r"
-
-    ; R key: f / n
-    if (k = "r")
-        return onsetShift ? "f" : "n"
-
-    ; A key: v / s
-    if (k = "a")
-        return onsetShift ? "v" : "s"
-
-    ; S key: g / t
-    if (k = "s")
         return onsetShift ? "g" : "t"
 
-    ; D key: b / h
+    ; R key: k / h
+    if (k = "r")
+        return onsetShift ? "k" : "h"
+
+    ; S key: b / s
+    if (k = "s")
+        return onsetShift ? "b" : "s"
+
+    ; D key: f / r
     if (k = "d")
-        return onsetShift ? "b" : "h"
+        return onsetShift ? "f" : "r"
 
-    ; Z key: q / c
+    ; Z key: p
     if (k = "z")
-        return onsetShift ? "q" : "c"
+        ; return onsetShift ? "q" : "p"
+        return "p"
 
-    ; X key: x / d
+    ; X key: z / n
     if (k = "x")
-        return onsetShift ? "x" : "d"
+        return onsetShift ? "z" : "n"
 
-    ; C key: k / l
+    ; C key: v / l
     if (k = "c")
-        return onsetShift ? "k" : "l"
+        return onsetShift ? "v" : "l"
+
+    ; V key: y / m
+    if (k = "v")
+        return onsetShift ? "y" : "m"
 
     ; ----- right field: coda-side consonants -----
     ; Upper value = coda shift, lower value = ordinary output.
 
-    ; U key: w / c
-    if (k = "u")
+    ; Y key: w / c
+    if (k = "y")
         return codaShift ? "w" : "c"
 
-    ; I key: v / n
+    ; U key: x / l
+    if (k = "u")
+        return codaShift ? "x" : "l"
+
+    ; I key: p / s
     if (k = "i")
-        return codaShift ? "v" : "n"
+        return codaShift ? "p" : "s"
 
-    ; O key: b / l
+    ; O key: b / d
     if (k = "o")
-        return codaShift ? "b" : "l"
+        return codaShift ? "b" : "d"
 
-    ; P key: k / g
+    ; P key: k / h
     if (k = "p")
-        return codaShift ? "k" : "g"
+        return codaShift ? "k" : "h"
 
-    ; K key: f / s
+    ; K key: f / n
     if (k = "k")
-        return codaShift ? "f" : "s"
+        return codaShift ? "f" : "n"
 
-    ; L key: p / t
+    ; L key: y / t
     if (k = "l")
-        return codaShift ? "p" : "t"
+        return codaShift ? "y" : "t"
 
-    ; ; key: y / d
-    if (k = ";")
-        return codaShift ? "y" : "d"
-
-    ; M key: r / r
+    ; M key: v / r
     if (k = "m")
-        ; return codaShift ? "r" : "r"
-        return "r"
+        return codaShift ? "v" : "r"
 
-    ; / key: x / h
+    ; / key: g
     if (k = "/")
-        return codaShift ? "x" : "h"
+        ; return codaShift ? "x" : "h"
+        return "g"
 
     kind := "unknown"
     return ""
