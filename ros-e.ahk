@@ -253,9 +253,9 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
     if (k = "q")
         return onsetShift ? "q" : "w"
 
-    ; W key: j / c
+    ; W key: v / c
     if (k = "w")
-        return onsetShift ? "j" : "c"
+        return onsetShift ? "v" : "c"
 
     ; E key: g / t
     if (k = "e")
@@ -278,13 +278,13 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
         ; return onsetShift ? "q" : "p"
         return "p"
 
-    ; X key: z / n
+    ; X key: j / n
     if (k = "x")
-        return onsetShift ? "z" : "n"
+        return onsetShift ? "j" : "n"
 
-    ; C key: v / l
+    ; C key: z / l
     if (k = "c")
-        return onsetShift ? "v" : "l"
+        return onsetShift ? "z" : "l"
 
     ; V key: y / m
     if (k = "v")
