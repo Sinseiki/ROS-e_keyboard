@@ -1,28 +1,25 @@
 ﻿; =========================================
-; ROS-e - AutoHotkey v1 Prototype
+; ROS-e - AutoHotkey v2 Prototype
 ; Roman Orthographic Simultaneous-input for English
 ; by eekdland (Sinseiki)
 ;
 ; Alias: ROSE
 ;
-; This file is based on the uploaded ros-e.ahk structure,
-; but refactored for ROS-e dictionaryless chord input.
+; ROS-e orthographic chord input with optional abbreviations.
 ;
 ; Core idea:
 ;   1. Collect keys within CHORD_MS.
 ;   2. Sort by physical order.
-;   3. Detect onset shift / coda shift.
-;   4. Convert by ROS-e layout table.
-;   5. Send generated roman text.
+;   3. Check for a physical-key abbreviation.
+;   4. Detect onset shift / coda shift.
+;   5. Convert by ROS-e layout table.
+;   6. Send generated text.
 ; =========================================
 
-#NoEnv
+#Requires AutoHotkey v2.0
 #SingleInstance Force
-#InstallKeybdHook
-#UseHook On
-SendMode Input
-SetBatchLines, -1
-ListLines, Off
+InstallKeybdHook()
+SendMode "Input"
 
 ; -------------------------
 ; Settings
@@ -36,14 +33,26 @@ global g_show_debug := false
 ; Session state
 ; -------------------------
 global g_timerOn := false
-global g_keys := Object()
-global g_sessionId := 0
+global g_keys := Map()
+global g_pendingSemi := false
+global g_pendingSlash := false
 
 ; -------------------------
 ; ROS-e special keys
 ; -------------------------
 global ONSET_SHIFT_KEY := "a"
 global CODA_SHIFT_KEY := ";"
+
+; -------------------------
+; Physical key order
+; -------------------------
+; Onset -> Nucleus -> Coda fields,
+; Left -> Right order used to generate deterministic output.
+; =========================================
+global PHYSICAL_ORDER := [
+    "q","a","z","w","s","x","e","d","c","r","v","f","t","g",
+    "b","h","n","j","y","u","m","i","k","o","l","p",";","/"
+]
 
 ; -------------------------
 ; Toggle
@@ -54,102 +63,47 @@ global CODA_SHIFT_KEY := ";"
 ;
 ; F9 is also bound to the same toggle for keyboards without ScrollLock.
 ; -------------------------
-SetScrollLockState, On
 
-$ScrollLock::
-    Gosub, __ToggleRose
-return
+SetScrollLockState "On"
 
-$F9::
-    Gosub, __ToggleRose
-return
+$ScrollLock::ToggleRose()
+$F9::ToggleRose()
 
-__ToggleRose:
+ToggleRose() {
+    global g_enabled
+
     g_enabled := !g_enabled
 
-    ; Reset all pending states when disabling.
     if (!g_enabled)
         ResetSession()
 
-    state := g_enabled ? "On" : "Off"
-
     ; Keep the physical ScrollLock LED in sync with ROS-e state.
     ; If the keyboard has no ScrollLock LED, this still keeps Windows state synced.
-    SetScrollLockState, % state
 
-    ; Fully enable/disable ROS-e hotkeys.
-    Hotkey, $q, % state
-    Hotkey, $w, % state
-    Hotkey, $e, % state
-    Hotkey, $r, % state
-    Hotkey, $t, % state
-    Hotkey, $y, % state
-    Hotkey, $u, % state
-    Hotkey, $i, % state
-    Hotkey, $o, % state
-    Hotkey, $p, % state
+    SetScrollLockState(g_enabled ? "On" : "Off")
 
-    Hotkey, $a, % state
-    Hotkey, $s, % state
-    Hotkey, $d, % state
-    Hotkey, $f, % state
-    Hotkey, $g, % state
-    Hotkey, $h, % state
-    Hotkey, $j, % state
-    Hotkey, $k, % state
-    Hotkey, $l, % state
+    ToolTip("ROS-e = " . (g_enabled ? "On" : "Off"))
+    SetTimer(HideTip, -800)
+}
 
-    Hotkey, $z, % state
-    Hotkey, $x, % state
-    Hotkey, $c, % state
-    Hotkey, $v, % state
-    Hotkey, $b, % state
-    Hotkey, $n, % state
-    Hotkey, $m, % state
-
-    Hotkey, $+`;, % state
-    Hotkey, $+/, % state
-    Hotkey, $`;, % state
-    Hotkey, $/, % state
-
-    ; ToolTip, % "ROS-e = " . (g_enabled ? "On" : "Off") . " / ScrollLock = " . state
-    ToolTip, % "ROS-e = " . (g_enabled ? "On" : "Off")
-    SetTimer, __HideTip, -800
-return
-
-; Optional debug toggle. Currently disabled because F9 is used as backup ROS-e toggle.
-; F9::
-;     g_show_debug := !g_show_debug
-;     ToolTip, % "ROS-e Debug = " . (g_show_debug ? "On" : "Off")
-;     SetTimer, __HideTip, -800
-; return
-
-__HideTip:
-ToolTip
-return
+HideTip() {
+    ToolTip()
+}
 
 ; -------------------------
 ; Hangul/English toggle passthrough
 ; -------------------------
-$vk15::
-    FlushChord()
-    SendInput, {vk15}
-return
+$vk15::SendSpecial("{vk15}")
 
 ; =========================================
 ; 1) Physical key order
 ; =========================================
-; Onset -> Nucleus -> Coda fields,
-; Left -> Right order used to generate deterministic output.
-; =========================================
-
-GetOrderedKeys(ByRef keyMap) {
-    order := ["q","a","z","w","s","x","e","d","c","r","v","f","t","g","b","h","n","j","y","u","m","i","k","o","l","p",";","/"]
-    
+GetOrderedKeys(keyMap) {
+    global PHYSICAL_ORDER
     out := []
 
-    for idx, k in order {
-        if (keyMap.HasKey(k))
+    for k in PHYSICAL_ORDER {
+        if keyMap.Has(k)
             out.Push(k)
     }
 
@@ -169,10 +123,9 @@ GetOrderedKeys(ByRef keyMap) {
 ;   Coda shift changes lower -> upper.
 ;
 ; Vowels:
-;   F=e, G=o, H=a, B=i, N=u
+;   T=o, F=e, G=i, H=u, J=a, B=o, N=e
 ;
-; Special:
-;   T=rev, Y=x2
+; Multiple O and E positions are intentional.
 ; =========================================
 
 
@@ -190,24 +143,20 @@ IsCodaFieldKey(k) {
         || k = "m" || k = "/")
 }
 
-MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
+MapKeyToToken(k, onsetShift, codaShift, &kind) {
     kind := "cons"
 
     ; ----- onset shift key -----
     ; A is onset-shift when chorded with an onset-side key,
     ; but outputs "d" when it is not functioning as onset shift.
-    if (k = "a") {
-        kind := "cons"
+    if (k = "a")
         return "d"
-    }
 
     ; ----- coda shift key -----
     ; Semicolon is coda-shift when chorded with a coda-side key,
     ; but outputs "m" when it is not functioning as coda shift.
-    if (k = ";") {
-        kind := "cons"
+    if (k = ";")
         return "m"
-    }
 
     ; ----- vowels -----
     ; Multiple e/o keys are intentional. They allow direct vowel sequences
@@ -249,9 +198,9 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
     ; ----- left field: onset-side consonants -----
     ; Upper value = onset shift, lower value = ordinary output.
 
-    ; Q key: q / w
+    ; Q key: w
     if (k = "q")
-        return onsetShift ? "q" : "w"
+        return "w"
 
     ; W key: v / c
     if (k = "w")
@@ -273,14 +222,13 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
     if (k = "d")
         return onsetShift ? "f" : "r"
 
-    ; Z key: p
+    ; Z key: j / p
     if (k = "z")
-        ; return onsetShift ? "q" : "p"
-        return "p"
+        return onsetShift ? "j" : "p"
 
-    ; X key: j / n
+    ; X key: q / n
     if (k = "x")
-        return onsetShift ? "j" : "n"
+        return onsetShift ? "q" : "n"
 
     ; C key: z / l
     if (k = "c")
@@ -327,50 +275,139 @@ MapKeyToToken(k, onsetShift, codaShift, ByRef kind) {
 
     ; / key: g
     if (k = "/")
-        ; return codaShift ? "x" : "h"
         return "g"
 
     kind := "unknown"
     return ""
 }
 
-; =========================================
-; 3) Output helpers
-; =========================================
-
-JoinTokens(ByRef tokens) {
+JoinTokens(tokens) {
     out := ""
-
-    for idx, token in tokens
+    for token in tokens
         out .= token
-
     return out
+}
+
+; =========================================
+; 3) Optional developer abbreviations
+; =========================================
+; Abbreviations are matched by physical-key chord before normal
+; ROS-e letter conversion. Any physical-key chord may be assigned.
+; Chord IDs are canonicalized, so key order in the map does not matter.
+; =========================================
+
+GetAbbreviationMap() {
+    static abbrevMap := 0
+
+    if !IsObject(abbrevMap) {
+        abbrevMap := Map()
+
+        ; Starter developer abbreviations.
+        ; These defaults use the A+X(Q) family, but this is only a convention.
+        ; Users may change, remove, or add ANY physical-key chord here.
+        ; Key order does not matter; chord IDs are canonicalized automatically.
+
+        abbrevMap["a+x+k"] := "return"
+        abbrevMap["a+x+l"] := "static"
+        abbrevMap["a+x+;"] := "class"
+        abbrevMap["a+x+y"] := "string"
+        abbrevMap["a+x+u"] := "function"
+        abbrevMap["a+x+i"] := "import"
+        abbrevMap["a+x+o"] := "const"
+        abbrevMap["a+x+p"] := "public"
+        abbrevMap["a+x+/"] := "value"
+
+        abbrevMap["a+x+k+;"] := "object"
+        abbrevMap["a+x+l+;"] := "struct"
+        abbrevMap["a+x+y+;"] := "default"
+        abbrevMap["a+x+u+;"] := "package"
+        abbrevMap["a+x+i+;"] := "interface"
+        abbrevMap["a+x+o+;"] := "boolean"
+        abbrevMap["a+x+p+;"] := "private"
+        abbrevMap["a+x+m+;"] := "length"
+        abbrevMap["a+x+/+;"] := "exception"
+
+        ; Examples:
+        ; abbrevMap["q+w"] := "example"
+        ; abbrevMap["j+f"] := "custom"
+        ; abbrevMap["o+u+i"] := "another"
+
+        normalized := Map()
+        for chordId, expansion in abbrevMap {
+            canonicalId := CanonicalizePhysicalChordId(chordId)
+            normalized[canonicalId] := expansion
+        }
+        abbrevMap := normalized
+    }
+
+    return abbrevMap
+}
+
+CanonicalizePhysicalChordId(chordId) {
+    keyMap := Map()
+
+    parts := StrSplit(chordId, "+")
+    for k in parts {
+        k := Trim(k)
+        if (k != "")
+            keyMap[k] := true
+    }
+
+    return BuildPhysicalChordId(GetOrderedKeys(keyMap))
+}
+
+BuildPhysicalChordId(orderedKeys) {
+    id := ""
+
+    for k in orderedKeys {
+        if (id != "")
+            id .= "+"
+        id .= k
+    }
+
+    return id
+}
+
+TryGetAbbreviation(orderedKeys, &output) {
+    output := ""
+    chordId := BuildPhysicalChordId(orderedKeys)
+    map := GetAbbreviationMap()
+
+    if !map.Has(chordId)
+        return false
+
+    output := map[chordId]
+    return true
 }
 
 ; =========================================
 ; 4) Chord builder
 ; =========================================
 
-BuildOutput(ByRef orderedKeys) {
+BuildOutput(orderedKeys) {
     global ONSET_SHIFT_KEY, CODA_SHIFT_KEY
+
+    abbreviation := ""
+    if TryGetAbbreviation(orderedKeys, &abbreviation)
+        return abbreviation
 
     hasOnsetShiftKey := false
     hasCodaShiftKey := false
     hasOnsetTarget := false
     hasCodaTarget := false
 
-    ; For single-key chord, V and N should output letters.
-    singleKey := (orderedKeys.Length() = 1)
+    ; For a single-key chord, A and ; should output their ordinary letters.
+    singleKey := (orderedKeys.Length = 1)
 
     ; First pass: detect scoped modifiers and their target fields.
     ;
     ; Important:
-    ;   V is NOT a global onset modifier.
-    ;   N is NOT a global coda modifier.
+    ;   A is NOT a global onset modifier.
+    ;   ; is NOT a global coda modifier.
     ;
-    ;   V becomes onset-shift only when an onset-side key exists in the same chord.
-    ;   N becomes coda-shift only when a coda-side key exists in the same chord.
-    for idx, k in orderedKeys {
+    ;   A becomes onset-shift only when an onset-side key exists in the same chord.
+    ;   ; becomes coda-shift only when a coda-side key exists in the same chord.
+    for k in orderedKeys {
         if (k = ONSET_SHIFT_KEY) {
             hasOnsetShiftKey := true
             continue
@@ -381,10 +418,10 @@ BuildOutput(ByRef orderedKeys) {
             continue
         }
 
-        if (IsOnsetFieldKey(k))
+        if IsOnsetFieldKey(k)
             hasOnsetTarget := true
 
-        if (IsCodaFieldKey(k))
+        if IsCodaFieldKey(k)
             hasCodaTarget := true
     }
 
@@ -392,25 +429,22 @@ BuildOutput(ByRef orderedKeys) {
     codaShift := (!singleKey && hasCodaShiftKey && hasCodaTarget)
 
     tokens := []
-    kinds := []
 
     ; Second pass: build tokens.
-    for idx, k in orderedKeys {
-        ; Skip V only when it is actually functioning as onset shift.
+        ; Skip A only when it is actually functioning as onset shift.
+    for k in orderedKeys {
         if (k = ONSET_SHIFT_KEY && onsetShift)
             continue
 
-        ; Skip N only when it is actually functioning as coda shift.
+        ; Skip ; only when it is actually functioning as coda shift.
         if (k = CODA_SHIFT_KEY && codaShift)
             continue
 
         kind := ""
-        token := MapKeyToToken(k, onsetShift, codaShift, kind)
+        token := MapKeyToToken(k, onsetShift, codaShift, &kind)
 
-        if (token != "") {
+        if (token != "")
             tokens.Push(token)
-            kinds.Push(kind)
-        }
     }
 
     return JoinTokens(tokens)
@@ -434,8 +468,8 @@ ClearPunctPending() {
 
     g_pendingSemi := false
     g_pendingSlash := false
-    SetTimer, __ClearSemiPending, Off
-    SetTimer, __ClearSlashPending, Off
+    SetTimer(ClearSemiPending, 0)
+    SetTimer(ClearSlashPending, 0)
 }
 
 HandleShiftSemicolon() {
@@ -443,20 +477,21 @@ HandleShiftSemicolon() {
 
     FlushChord()
 
-    ; Do not allow slash state to be upgraded accidentally.
+    ; Do not allow semicolon state to be upgraded accidentally.
     g_pendingSlash := false
-    SetTimer, __ClearSlashPending, Off
+    SetTimer(ClearSlashPending, 0)
 
-    if (g_pendingSemi) {
+    if g_pendingSemi {
         g_pendingSemi := false
-        SetTimer, __ClearSemiPending, Off
-        SendInput, {Backspace}{Text}:
+        SetTimer(ClearSemiPending, 0)
+        Send("{Backspace}")
+        SendText(":")
         return
     }
 
-    SendInput, {Text}`;
+    SendText(";")
     g_pendingSemi := true
-    SetTimer, __ClearSemiPending, -%PUNCT_DANCE_MS%
+    SetTimer(ClearSemiPending, -PUNCT_DANCE_MS)
 }
 
 HandleShiftSlash() {
@@ -464,30 +499,32 @@ HandleShiftSlash() {
 
     FlushChord()
 
-    ; Do not allow semicolon state to be upgraded accidentally.
+    ; Do not allow slash state to be upgraded accidentally.
     g_pendingSemi := false
-    SetTimer, __ClearSemiPending, Off
+    SetTimer(ClearSemiPending, 0)
 
-    if (g_pendingSlash) {
+    if g_pendingSlash {
         g_pendingSlash := false
-        SetTimer, __ClearSlashPending, Off
-        SendInput, {Backspace}{Text}?
+        SetTimer(ClearSlashPending, 0)
+        Send("{Backspace}")
+        SendText("?")
         return
     }
 
-    SendInput, {Text}/
+    SendText("/")
     g_pendingSlash := true
-    SetTimer, __ClearSlashPending, -%PUNCT_DANCE_MS%
+    SetTimer(ClearSlashPending, -PUNCT_DANCE_MS)
 }
 
-__ClearSemiPending:
+ClearSemiPending() {
+    global g_pendingSemi
     g_pendingSemi := false
-return
+}
 
-__ClearSlashPending:
+ClearSlashPending() {
+    global g_pendingSlash
     g_pendingSlash := false
-return
-
+}
 
 ; =========================================
 ; 6) Session helpers
@@ -496,44 +533,43 @@ return
 ResetSession() {
     global g_timerOn, g_keys
     g_timerOn := false
-    g_keys := Object()
-    SetTimer, __ChordTimeout, Off
+    g_keys := Map()
+    SetTimer(ChordTimeout, 0)
 }
 
 StartOrContinueSession(k) {
-    global g_timerOn, g_keys, CHORD_MS, g_sessionId
+    global g_timerOn, g_keys, CHORD_MS
 
     ClearPunctPending()
 
-    g_keys[k] := 1
+    g_keys[k] := true
     g_timerOn := true
-    g_sessionId += 1
 
-    SetTimer, __ChordTimeout, Off
-    SetTimer, __ChordTimeout, -%CHORD_MS%
+    SetTimer(ChordTimeout, 0)
+    SetTimer(ChordTimeout, -CHORD_MS)
 }
 
 FlushChord() {
     global g_timerOn, g_keys, g_show_debug
 
-    if (!g_timerOn)
+    if !g_timerOn
         return
 
     ordered := GetOrderedKeys(g_keys)
     output := BuildOutput(ordered)
 
-    if (g_show_debug) {
+    if g_show_debug {
         debug := ""
-        for i, k in ordered
+        for k in ordered
             debug .= k
-        ToolTip, % debug . " => " . output
-        SetTimer, __HideTip, -700
+        ToolTip(debug . " => " . output)
+        SetTimer(HideTip, -700)
     }
 
     ResetSession()
 
     if (output != "")
-        SendInput, {Text}%output%
+        SendText(output)
 }
 
 ; =========================================
@@ -541,46 +577,61 @@ FlushChord() {
 ; =========================================
 
 IsModifierPressed() {
-    modifiers := ["Ctrl", "Alt", "LWin", "RWin"]
-    for _, mod in modifiers {
-        if (GetKeyState(mod, "P"))
+    for mod in ["Ctrl", "Alt", "LWin", "RWin"] {
+        if GetKeyState(mod, "P")
             return true
     }
     return false
 }
 
 OnKey(k) {
-    ; Shift is used to make OS keyboard layout capital letters.
-    ; However, Shift+; and Shift+/ are handled by ROS-e punctuation logic.
-    if (GetKeyState("Shift", "P")) {
+    ; Shift/Ctrl/Alt/Win input should pass through as the physical key,
+    ; rather than being converted into a ROS-e chord.
+    if GetKeyState("Shift", "P") {
         if (k != ";" && k != "/") {
-            SendSpecial("{Text}" . k)
+            SendPhysicalKey(k)
             return
         }
     }
 
-    ; Ctrl/Alt/Win are usually shortcuts. Do not chord them.
-    if (IsModifierPressed()) {
-        SendSpecial("{Text}" . k)
+    if IsModifierPressed() {
+        SendPhysicalKey(k)
         return
     }
 
     StartOrContinueSession(k)
 }
 
-SendSpecial(text) {
+SendPhysicalKey(k) {
     FlushChord()
     ClearPunctPending()
-    SendInput, %text%
+
+    ; SendLevel prevents the synthetic key from re-triggering the $ hotkeys.
+    oldLevel := A_SendLevel
+    SendLevel 0
+    Send("{" . k . "}")
+    SendLevel oldLevel
 }
 
-__ChordTimeout:
+SendSpecial(keys) {
     FlushChord()
-return
+    ClearPunctPending()
+    Send(keys)
+}
+
+ChordTimeout() {
+    FlushChord()
+}
 
 ; =========================================
-; 8) Hooks: alphabet keys
+; 8) Hotkeys
 ; =========================================
+; #HotIf makes ROS-e's ordinary key hooks conditional. When ROS-e is
+; disabled, these hotkeys cease to intercept the underlying keyboard.
+; =========================================
+
+#HotIf g_enabled
+
 $q::OnKey("q")
 $w::OnKey("w")
 $e::OnKey("e")
@@ -610,25 +661,16 @@ $b::OnKey("b")
 $n::OnKey("n")
 $m::OnKey("m")
 
-; =========================================
-; 9) Hooks: punctuation keys used by ROS-e
-; =========================================
-; Shift tap-dance punctuation:
-;   Shift+; once  => ;
-;   Shift+; twice => :
-;   Shift+/ once  => /
-;   Shift+/ twice => ?
 $+`;::HandleShiftSemicolon()
 $+/::HandleShiftSlash()
 
 $`;::OnKey(";")
 $/::OnKey("/")
 
-; =========================================
-; 10) Flush-before-special keys
-; =========================================
 $Space::SendSpecial("{Space}")
 $Enter::SendSpecial("{Enter}")
 $Backspace::SendSpecial("{Backspace}")
 $Tab::SendSpecial("{Tab}")
 $Esc::SendSpecial("{Esc}")
+
+#HotIf

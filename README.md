@@ -57,6 +57,22 @@ Instead of translating words into shorthand codes, ROS-e attempts to preserve th
 
 ---
 
+# Setup
+
+1. Download and install **AutoHotkey** from the official website:
+
+   https://www.autohotkey.com
+
+2. Download `ros-e.ahk`.
+   
+   https://raw.githubusercontent.com/Sinseiki/ROS-e_keyboard/refs/heads/main/ros-e.ahk
+
+    (If the file opens in your web browser instead of downloading, right-click the page and select **"Save As"** to save the file.)
+
+3. Run `ros-e.ahk`.
+
+---
+
 # Orthographic Order Preservation
 
 ROS-e attempts to preserve the intended spelling order even when individual key presses are not perfectly synchronized.
@@ -244,6 +260,58 @@ For example:
 * Shift + / twice → ?
 
 The exact behavior may change during future development.
+
+---
+
+# Optional Abbreviations
+
+ROS-e includes an optional physical-key chord abbreviation system, primarily intended to reduce the number of key presses required for frequently used words.
+
+Abbreviations are not required for ordinary ROS-e input. Words, identifiers, and other arbitrary strings can still be entered directly from their spelling without relying on an abbreviation dictionary.
+
+The default abbreviation set uses physical-key chords from the **A+X(Q)** family. This is only a convention for the distributed defaults, not a restriction of the abbreviation system itself.
+
+Because assigning an abbreviation to a chord overrides the normal ROS-e output of that chord, it is generally preferable to choose chords that are unlikely to represent useful letter sequences in ordinary English spelling.
+
+The distributed defaults use chords corresponding to **Q without U** for this reason. In ordinary English spelling, Q is most commonly followed by U, so Q combinations that do not contain U provide a relatively convenient space for optional abbreviations while reducing interference with normal orthographic input.
+
+This is only a design choice for the default abbreviation set. Users may change, remove, or replace any of the default abbreviations according to their own needs.
+
+Users may also add abbreviations by assigning text to **any physical-key chord**. If a chord is assigned to an abbreviation, that chord is reserved for the abbreviation and its original ROS-e output is no longer available through that chord. Users should therefore consider possible conflicts with normal ROS-e input when choosing their own abbreviation chords.
+
+Abbreviations are matched by physical keys rather than by the letters that those keys would normally produce. This allows abbreviation definitions to remain independent of ROS-e's Onset, Nucleus, and Coda interpretation.
+
+The order in which keys are written in an abbreviation definition does not matter. Chord IDs are canonicalized automatically, so different written orders of the same physical-key combination are treated as the same chord.
+
+The purpose of this feature is not to turn ROS-e into a dictionary-dependent stenographic system. It provides an optional layer of user-controlled input compression while preserving direct orthographic input as the core method.
+
+## Built-in Abbreviations
+(QWERTY Physical Keys)
+
+- a + x + k → return
+- a + x + l → static
+- a + x + ; → class
+- a + x + y → string
+- a + x + u → function
+- a + x + i → import
+- a + x + o → const
+- a + x + p → public
+- a + x + / → value
+<br />
+- a + x + k + ; → object
+- a + x + l + ; → struct
+- a + x + y + ; → default
+- a + x + u + ; → package
+- a + x + i + ; → interface
+- a + x + o + ; → boolean
+- a + x + p + ; → private
+- a + x + m + ; → length
+- a + x + / + ; → exception
+
+## Using Custom Abbreviations
+
+See this [Using Custom Abbreviations](using_custom_abbreviations.md) for instructions on how to add, change abbreviations.
+
 
 ---
 
