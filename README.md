@@ -1,4 +1,6 @@
 # ROS-e Keyboard
+※ Korean documentation is available at [Korean README](Korean/README.md).
+
 **Roman Orthographic Simultaneous-input for English**
 by eekdland (Sinseiki)
 
@@ -298,6 +300,7 @@ The purpose of this feature is not to turn ROS-e into a dictionary-dependent ste
 - a + x + p → public
 - a + x + / → value
 <br />
+
 - a + x + k + ; → object
 - a + x + l + ; → struct
 - a + x + y + ; → default
