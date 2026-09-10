@@ -289,28 +289,32 @@ ROS-e에는 자주 사용하는 단어를 입력하는 데 필요한 글쇠 수�
 
 ## 기본 내장 약어
 
+이 단어들은 개발자들이 자주 사용하는 단어를 기반으로 선택한 기본 내장 약어입니다.
+기본 약어는 활용이 자유로운 기본형을 원칙으로 하였습니다.
+( https://zenodo.org/records/285293 )
+
 (QWERTY 물리 글쇠)
 
--   a + x + k → return
--   a + x + l → static
--   a + x + ; → class
--   a + x + y → string
--   a + x + u → function
--   a + x + i → import
--   a + x + o → const
--   a + x + p → public
--   a + x + / → value 
+-  a + x + k → return
+-  a + x + l → function
+-  a + x + ; → public
+-  a + x + y → import
+-  a + x + u → void
+-  a + x + i → array
+-  a + x + o → static
+-  a + x + p → true
+-  a + x + / → false
 <br />
 
--   a + x + k + ; → object
--   a + x + l + ; → struct
--   a + x + y + ; → default
--   a + x + u + ; → package
--   a + x + i + ; → interface
--   a + x + o + ; → boolean
--   a + x + p + ; → private
--   a + x + m + ; → length
--   a + x + / + ; → exception
+- a + x + k + ; → private
+- a + x + l + ; → break
+- a + x + y + ; → double
+- a + x + u + ; → class
+- a + x + i + ; → final
+- a + x + o + ; → protect
+- a + x + p + ; → boolean
+- a + x + m + ; → struct
+- a + x + / + ; → extends
 
 ## 사용자 정의 약어 사용
 

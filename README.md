@@ -288,28 +288,33 @@ The order in which keys are written in an abbreviation definition does not matte
 The purpose of this feature is not to turn ROS-e into a dictionary-dependent stenographic system. It provides an optional layer of user-controlled input compression while preserving direct orthographic input as the core method.
 
 ## Built-in Abbreviations
+
+These words were selected based on frequently used terms by developers.
+As a general rule, default abbreviations used base forms for greater flexibility.
+( https://zenodo.org/records/285293 )
+
 (QWERTY Physical Keys)
 
-- a + x + k → return
-- a + x + l → static
-- a + x + ; → class
-- a + x + y → string
-- a + x + u → function
-- a + x + i → import
-- a + x + o → const
-- a + x + p → public
-- a + x + / → value
+-  a + x + k → return
+-  a + x + l → function
+-  a + x + ; → public
+-  a + x + y → import
+-  a + x + u → void
+-  a + x + i → array
+-  a + x + o → static
+-  a + x + p → true
+-  a + x + / → false
 <br />
 
-- a + x + k + ; → object
-- a + x + l + ; → struct
-- a + x + y + ; → default
-- a + x + u + ; → package
-- a + x + i + ; → interface
-- a + x + o + ; → boolean
-- a + x + p + ; → private
-- a + x + m + ; → length
-- a + x + / + ; → exception
+- a + x + k + ; → private
+- a + x + l + ; → break
+- a + x + y + ; → double
+- a + x + u + ; → class
+- a + x + i + ; → final
+- a + x + o + ; → protect
+- a + x + p + ; → boolean
+- a + x + m + ; → struct
+- a + x + / + ; → extends
 
 ## Using Custom Abbreviations
 
