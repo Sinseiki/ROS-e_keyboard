@@ -75,6 +75,20 @@ Instead of translating words into shorthand codes, ROS-e attempts to preserve th
 
 ---
 
+# Enabling and Disabling ROS-e
+
+ROS-e uses Scroll Lock as its primary mode switch.
+
+* Scroll Lock ON → ROS-e enabled
+* Scroll Lock OFF → ROS-e disabled
+* F9 → Alternative toggle key
+
+The Scroll Lock indicator can therefore be used as a visual status indicator for ROS-e.
+
+When ROS-e is disabled, all keys behave normally according to the active keyboard layout.
+
+---
+
 # Orthographic Order Preservation
 
 ROS-e attempts to preserve the intended spelling order even when individual key presses are not perfectly synchronized.
@@ -158,7 +172,7 @@ The thumb is normally not required.
 However, ROS-e allows occasional thumb participation when:
 
 * a chord would otherwise cause finger collisions,
-* a shorter finger would need to be stretched while a longer finger bends at the same time,
+* a shorter finger would need to be stretched while a longer finger bends at the same time (like 'ac', 'al', 'li', 'mi', 'ur', 'ar', etc.),
 * a chord would require an unusually wide hand stretch,
 * or an alternative movement is significantly more comfortable.
 
@@ -208,60 +222,6 @@ oi
 To support these patterns efficiently, ROS-e uses duplicated vowel positions for certain vowels.
 
 This design allows common vowel combinations to be entered naturally while maintaining orthographic consistency.
-
----
-
-# Modifiers and Shortcuts
-
-ROS-e does not introduce a separate mechanism for capitalization or system shortcuts.
-
-When Shift, Ctrl, Alt, or Win is pressed, ROS-e temporarily falls back to the underlying keyboard layout.
-
-As a result, users can continue to use familiar keyboard behavior without learning additional shortcut rules.
-
-For example:
-
-* Shift + letter → capital letter
-* Ctrl + C → copy
-* Ctrl + V → paste
-* Ctrl + Z → undo
-* Alt + Tab → task switching
-* Win + R → Run dialog
-* Win + E → File Explorer
-
-This approach allows ROS-e to coexist with existing operating-system and development-tool workflows while minimizing interference with established shortcuts.
-
-
----
-
-# Enabling and Disabling ROS-e
-
-ROS-e uses Scroll Lock as its primary mode switch.
-
-* Scroll Lock ON → ROS-e enabled
-* Scroll Lock OFF → ROS-e disabled
-* F9 → Alternative toggle key
-
-The Scroll Lock indicator can therefore be used as a visual status indicator for ROS-e.
-
-When ROS-e is disabled, all keys behave normally according to the active keyboard layout.
-
----
-
-# Punctuation
-
-Some ROS-e letter assignments occupy positions normally used by punctuation keys.
-
-As a result, punctuation may require modifier-based input.
-
-For example:
-
-* Shift + ; → ;
-* Shift + ; twice → :
-* Shift + / → /
-* Shift + / twice → ?
-
-The exact behavior may change during future development.
 
 ---
 
@@ -320,6 +280,44 @@ As a general rule, default abbreviations used base forms for greater flexibility
 
 See this [Using Custom Abbreviations](using_custom_abbreviations.md) for instructions on how to add, change abbreviations.
 
+---
+
+# Modifiers and Shortcuts
+
+ROS-e does not introduce a separate mechanism for capitalization or system shortcuts.
+
+When Shift, Ctrl, Alt, or Win is pressed, ROS-e temporarily falls back to the underlying keyboard layout.
+
+As a result, users can continue to use familiar keyboard behavior without learning additional shortcut rules.
+
+For example:
+
+* Shift + letter → capital letter
+* Ctrl + C → copy
+* Ctrl + V → paste
+* Ctrl + Z → undo
+* Alt + Tab → task switching
+* Win + R → Run dialog
+* Win + E → File Explorer
+
+This approach allows ROS-e to coexist with existing operating-system and development-tool workflows while minimizing interference with established shortcuts.
+
+---
+
+# Punctuation
+
+Some ROS-e letter assignments occupy positions normally used by punctuation keys.
+
+As a result, punctuation may require modifier-based input.
+
+For example:
+
+* Shift + ; → ;
+* Shift + ; twice → :
+* Shift + / → /
+* Shift + / twice → ?
+
+The exact behavior may change during future development.
 
 ---
 
