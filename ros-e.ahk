@@ -51,7 +51,7 @@ global CODA_SHIFT_KEY := ";"
 ; =========================================
 global PHYSICAL_ORDER := [
     "q","a","z","w","s","x","e","d","c","r","v","f","t","g",
-    "b","h","n","j","y","u","m","i","k","o","l","p",";","/"
+    "b","h","n","j","y","u","m","i","k","o","l","p",";","/","Space"
 ]
 
 ; -------------------------
@@ -145,6 +145,13 @@ IsCodaFieldKey(k) {
 
 MapKeyToToken(k, onsetShift, codaShift, &kind) {
     kind := "cons"
+
+    ; ----- space -----
+    ; Space participates in the chord but is always emitted last.
+    if (k = "Space") {
+        kind := "space"
+        return " "
+    }
 
     ; ----- onset shift key -----
     ; A is onset-shift when chorded with an onset-side key,
@@ -370,13 +377,26 @@ BuildPhysicalChordId(orderedKeys) {
 
 TryGetAbbreviation(orderedKeys, &output) {
     output := ""
-    chordId := BuildPhysicalChordId(orderedKeys)
+    chordKeys := []
+    hasSpace := false
+
+    for k in orderedKeys {
+        if (k = "Space")
+            hasSpace := true
+        else
+            chordKeys.Push(k)
+    }
+
+    chordId := BuildPhysicalChordId(chordKeys)
     map := GetAbbreviationMap()
 
     if !map.Has(chordId)
         return false
 
     output := map[chordId]
+    if hasSpace
+        output .= " "
+
     return true
 }
 
@@ -666,8 +686,8 @@ $+/::HandleShiftSlash()
 
 $`;::OnKey(";")
 $/::OnKey("/")
+$Space::OnKey("Space")
 
-$Space::SendSpecial("{Space}")
 $Enter::SendSpecial("{Enter}")
 $Backspace::SendSpecial("{Backspace}")
 $Tab::SendSpecial("{Tab}")
