@@ -169,12 +169,12 @@ MapKeyToToken(k, onsetShift, codaShift, &kind) {
     ; Multiple e/o keys are intentional. They allow direct vowel sequences
     if (k = "t") {
         kind := "vowel"
-        return "o"
+        return "e"
     }
 
     if (k = "f") {
         kind := "vowel"
-        return "e"
+        return "a"
     }
 
     if (k = "g") {
@@ -184,12 +184,12 @@ MapKeyToToken(k, onsetShift, codaShift, &kind) {
 
     if (k = "h") {
         kind := "vowel"
-        return "u"
+        return "o"
     }
 
     if (k = "j") {
         kind := "vowel"
-        return "a"
+        return "e"
     }
 
     if (k = "b") {
@@ -199,7 +199,7 @@ MapKeyToToken(k, onsetShift, codaShift, &kind) {
 
     if (k = "n") {
         kind := "vowel"
-        return "e"
+        return "u"
     }
 
     ; ----- left field: onset-side consonants -----
@@ -235,15 +235,15 @@ MapKeyToToken(k, onsetShift, codaShift, &kind) {
 
     ; X key: q / n
     if (k = "x")
-        return onsetShift ? "q" : "n"
+        return onsetShift ? "q" : "l"
 
     ; C key: z / l
     if (k = "c")
-        return onsetShift ? "j" : "l"
+        return onsetShift ? "j" : "m"
 
     ; V key: y / m
     if (k = "v")
-        return onsetShift ? "y" : "m"
+        return onsetShift ? "y" : "n"
 
     ; ----- right field: coda-side consonants -----
     ; Upper value = coda shift, lower value = ordinary output.
