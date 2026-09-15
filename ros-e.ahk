@@ -589,7 +589,7 @@ FlushChord() {
     ResetSession()
 
     if (output != "")
-        SendText(output)
+        SendEvent("{Text}" . output)
 }
 
 ; =========================================
