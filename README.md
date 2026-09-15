@@ -73,6 +73,13 @@ Instead of translating words into shorthand codes, ROS-e attempts to preserve th
 
 3. Run `ros-e.ahk`.
 
+　
+**Antivirus False Positive Notice:** As this program intercepts, rearranges and re-enters keyboard input,
+
+it may trigger false positives in the behaviour-based detection mechanisms of some antivirus programs.
+
+It is recommended that you add this script to the exceptions list of your antivirus program.
+
 ---
 
 # Enabling and Disabling ROS-e
